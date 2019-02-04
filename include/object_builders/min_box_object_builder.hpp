@@ -13,59 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *****************************************************************************/
-
-#ifndef _MIN_BOX_OBJECT_BUILDER_HPP_
-#define _MIN_BOX_OBJECT_BUILDER_HPP_
-
-#include <vector>
-#include "./base_object_builder.hpp"
-#include "common/types/object.hpp"
+#ifndef OBJECT_BUILDERS_INCLUDE_OBJECT_BUILDERS_MIN_BOX_OBJECT_BUILDER_HPP_
+#define OBJECT_BUILDERS_INCLUDE_OBJECT_BUILDERS_MIN_BOX_OBJECT_BUILDER_HPP_
 
 #include <Eigen/Core>
+#include <string>
+#include <vector>
 
+#include "common/types/object.hpp"
+#include "object_builders/base_object_builder.hpp"
+
+namespace autosense {
 namespace object_builder {
-    /**
-     * @brief Apollo doc
-     *  盒构建器将恢复给定多边形点的完整边界框, 即使点云稀疏
-     *  主要目的还是预估障碍物（例如，车辆）的方向
-     */
-    class MinBoxObjectBuilder : public BaseObjectBuilder {
-    public:
-        MinBoxObjectBuilder()
-        {}
+/**
+ * @brief Apollo doc
+ *  盒构建器将恢复给定多边形点的完整边界框, 即使点云稀疏
+ *  主要目的还是预估障碍物（例如，车辆）的方向
+ */
+class MinBoxObjectBuilder : public BaseObjectBuilder {
+ public:
+    MinBoxObjectBuilder() {}
 
-        virtual ~MinBoxObjectBuilder()
-        {}
+    virtual ~MinBoxObjectBuilder() {}
 
-        virtual void build(const std::vector<PointICloudPtr>& cloud_clusters, std::vector<ObjectPtr>* objects);
+    virtual void build(const std::vector<PointICloudPtr> &cloud_clusters,
+                       std::vector<ObjectPtr> *objects);
 
-        virtual void build(ObjectPtr object);
+    virtual void build(ObjectPtr object);
 
-        virtual std::string name() const
-        {
-            return "MinBoxObjectBuilder";
-        }
+    virtual std::string name() const { return "MinBoxObjectBuilder"; }
 
-    protected:
+ protected:
+    bool buildObjects(std::vector<ObjectPtr> *objects);
 
-        bool buildObjects(std::vector<ObjectPtr>* objects);
+    void buildObject(ObjectPtr object);
 
-        void buildObject(ObjectPtr object);
+    void setDefaultValue(PointICloudPtr cloud,
+                         ObjectPtr obj,
+                         Eigen::Vector4f *min_pt,
+                         Eigen::Vector4f *max_pt);
 
-        void setDefaultValue(PointICloudPtr cloud, ObjectPtr obj,
-                             Eigen::Vector4f* min_pt,
-                             Eigen::Vector4f* max_pt);
+    void computeGeometricFeature(ObjectPtr obj);
 
-        void computeGeometricFeature(ObjectPtr obj);
+    void computePolygon2dxy(ObjectPtr obj);
 
-        void computePolygon2dxy(ObjectPtr obj);
+    void reconstructPolygon3d(ObjectPtr obj);
 
-        void reconstructPolygon3d(ObjectPtr obj);
+    double computeAreaAlongOneEdge(ObjectPtr obj,
+                                   size_t first_in_point,
+                                   Eigen::Vector3d *center,
+                                   double *length,
+                                   double *width,
+                                   Eigen::Vector3d *dir);
+};
 
-        double computeAreaAlongOneEdge(ObjectPtr obj, size_t first_in_point,
-                                       Eigen::Vector3d* center, double* length,
-                                       double* width, Eigen::Vector3d* dir);
-    };
-}
+}  // namespace object_builder
+}  // namespace autosense
 
-#endif /* _MIN_BOX_OBJECT_BUILDER_HPP_ */
+#endif  // OBJECT_BUILDERS_INCLUDE_OBJECT_BUILDERS_MIN_BOX_OBJECT_BUILDER_HPP_
